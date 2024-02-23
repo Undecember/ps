@@ -1,4 +1,5 @@
 bin/cf
+codeforces/**/test*.txt
 # Created by https://www.toptal.com/developers/gitignore/api/git,vim,c++
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,vim,c++
 

@@ -1,11 +1,10 @@
 /*
- * Author : $%U%$
- * Created at $%Y%$-$%M%$-$%D%$ $%h%$:$%m%$:$%s%$
+ * Author : uuuuuuundec
+ * Created at 2024-02-23 17:43:02
  * powered by codeforce cli
  */
 
 // == FLAGS == //
-#define _ISTC                   // remove this to solve non-multiple test problem
 #define _NO_NEED_64INT          // remove this to use 64bit int for "int"
 #define _CONSTANT_MD            // remove this to use non-static MD from input
 #define _USE_TYPICAL_MD         // remove this to use custom constant MD
@@ -36,6 +35,7 @@ int recur_depth=0;template<typename Ostream,typename Cont>typename enable_if<is_
 #ifdef _CONSTANT_MD
 using Mint = Modular<integral_constant<decay<decltype(__MD__)>::type,__MD__>>;
 #endif
+using pii = pair<int, int>;
 #ifndef _NO_NEED_64INT
 using lli = long long int;
 #define int lli
@@ -47,13 +47,39 @@ using lli = long long int;
 int fact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];m.push_back(MDC(fact(n-1)*n));return m[n];}int ifact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];ifact(n-1);m.push_back(INV(fact(n)));return m[n];}int ncr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(MDC(fact(n)*ifact(r))*ifact(n-r));}int npr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(fact(n)*ifact(n-r));}
 // == end of template == //
 
-int N, M;
-vector<int> A;
+int V, E, K;
+vector<map<int, int>> edges;
 
 int _solve() {
-    cin >> N >> M;
-    A.resize(N);
-    for (auto &ai : A) cin >> ai;
+    cin >> V >> E >> K; --K;
+    edges.resize(V);
+    for (int i = 0; i < E; i++) {
+        int u, v, w;
+        cin >> u >> v >> w; --u; --v;
+        auto itr = edges[u].find(v);
+        if (itr == edges[u].end()) edges[u][v] = w;
+        else itr->second = min(itr->second, w);
+    }
+    vector<int> ans(V, 3e7);
+    ans[K] = 0;
+    priority_queue<pii, vector<pii>, greater<pii>> pq;
+    pq.push({0, K});
+    while (!pq.empty()) {
+        pii top = pq.top(); pq.pop();
+        if (top.first != ans[top.second]) continue;
+        int walk = top.second;
+        for (auto itr : edges[walk]) {
+            int dist = ans[walk] + itr.second;
+            if (dist < ans[itr.first]) {
+                ans[itr.first] = dist;
+                pq.push({dist, itr.first});
+            }
+        }
+    }
+    for (auto ansi : ans) {
+        if (ansi < 3e7) cout << ansi << endl;
+        else cout << "INF" << endl;
+    }
     return 0;
 }
 
