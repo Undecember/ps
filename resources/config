@@ -7,7 +7,7 @@
       "suffix": [
         "cpp"
       ],
-      "before_script": "g++ $%full%$ -o $%file%$ -std=c++20",
+      "before_script": "g++ -DDEBUG $%full%$ -o $%file%$ -std=c++20",
       "script": "./$%file%$",
       "after_script": "rm $%file%$"
     }

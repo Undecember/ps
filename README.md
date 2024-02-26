@@ -3,7 +3,8 @@
 ## Before Use
 
 ```bash
-./clean.sh # to clean the codes of mine (==Undecember)
+./clean.sh  # to clean the codes of mine (==Undecember)
+sudo apt install libcurl4-openssl-dev   # to use venv
 ```
 
 ## venv usage
