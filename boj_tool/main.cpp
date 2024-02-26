@@ -13,6 +13,7 @@ int parse_arg(int argc, char* argv[]);
 void help();
 void test();
 void load_problem(int arg);
+void submit();
 
 int main(int argc, char* argv[]) {
     ifstream is(".boj_curr");
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
             test();
             break;
         case 1: // boj submit
-            cerr << "Not implemented yet." << endl;
+            submit();
             break;
         default: // boj [problem id]
             load_problem(arg);
@@ -73,9 +74,9 @@ void test() {
 }
 
 void load_problem(int arg) {
-    string url = "https://www.acmicpc.net/problem/" + to_string(arg);
-    system(("xdgopen " + url + " > /dev/null 2>&1 &").c_str());
     string sarg = to_string(arg);
+    string url = "https://www.acmicpc.net/problem/" + sarg;
+    system(("xdg-open " + url + " > /dev/null 2>&1 &").c_str());
     if (!ifstream(sarg + ".cpp").is_open()) {
         system(("mkdir " + sarg + " && cd " + sarg + " && " + cf_path + " gen && cd ..").c_str());
         system(("mv " + sarg + "/* ./ && rm -rf " + sarg).c_str());
@@ -97,4 +98,13 @@ void load_problem(int arg) {
     os << arg;
     os.close();
     cout << i << " tests loaded." << endl;
+}
+
+void submit() {
+    if (!curr) {
+        cerr << "Please select problem first." << endl;
+        return;
+    }
+    string url = "https://www.acmicpc.net/submit/" + to_string(curr);
+    system(("xdg-open " + url + " > /dev/null 2>&1 &").c_str());
 }
