@@ -23,6 +23,6 @@ else()
     message(FATAL_ERROR "libcurl not found")
 endif()
 
-add_executable(boj main.cpp web.cpp)
-target_compile_options(boj PRIVATE -std=c++20)
+add_executable(boj main.cpp web.cpp str.cpp)
+target_compile_options(boj PRIVATE -g)
 target_link_libraries(boj PRIVATE myhtml ${CURL_LIBRARIES})

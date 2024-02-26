@@ -1,5 +1,7 @@
 #include "web.h"
 
+#include "str.h"
+
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, string *userp) {
     userp->append((char*)contents, size * nmemb);
     return size * nmemb;
@@ -31,26 +33,29 @@ vector<pair<string, string>> getTests(const string& url) {
     myhtml_parse(tree, MyENCODING_UTF_8, html.c_str(), html.size());
 
     vector<pair<string, string>> samples;
-    for (int i = 1;; ++i) {
+    for (int i = 1; ; i++) {
         string inputId = "sample-input-" + to_string(i);
         string outputId = "sample-output-" + to_string(i);
 
-        myhtml_collection_t* inputCollection = myhtml_get_nodes_by_tag_id(tree, NULL, myhtml_string_make(tree, inputId.c_str(), inputId.size()), NULL);
-        myhtml_collection_t* outputCollection = myhtml_get_nodes_by_tag_id(tree, NULL, myhtml_string_make(tree, outputId.c_str(), outputId.size()), NULL);
+        myhtml_collection_t* ins = myhtml_get_nodes_by_attribute_value(
+                tree, NULL, NULL, true, "id", 2, inputId.c_str(), inputId.length(), NULL);
+        myhtml_collection_t* outs = myhtml_get_nodes_by_attribute_value(
+                tree, NULL, NULL, true, "id", 2, outputId.c_str(), outputId.length(), NULL);
 
-        if (inputCollection->length == 0 || outputCollection->length == 0) {
-            myhtml_collection_destroy(inputCollection);
-            myhtml_collection_destroy(outputCollection);
+        if (!outs->length) {
+            myhtml_collection_destroy(ins);
+            myhtml_collection_destroy(outs);
             break;
         }
 
-        const char* inp = myhtml_node_text(inputCollection->list[0], NULL);
-        const char* out = myhtml_node_text(outputCollection->list[0], NULL);
+        char *inp = "", *out = "";
+        if (ins->length) inp = (char*)myhtml_node_text(myhtml_node_child(ins->list[0]), NULL);
+        out = (char*)myhtml_node_text(myhtml_node_child(outs->list[0]), NULL);
 
-        samples.push_back({inp ? inp : "", out ? out : ""});
+        samples.push_back({inp, out});
 
-        myhtml_collection_destroy(inputCollection);
-        myhtml_collection_destroy(outputCollection);
+        myhtml_collection_destroy(ins);
+        myhtml_collection_destroy(outs);
     }
 
     myhtml_tree_destroy(tree);

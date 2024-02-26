@@ -3,7 +3,7 @@
     {
       "alias": "cpp",
       "lang": "73",
-      "path": "PWD/bin/template.cpp",
+      "path": "PWD/resources/template.cpp",
       "suffix": [
         "cpp"
       ],
