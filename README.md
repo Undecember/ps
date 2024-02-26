@@ -9,11 +9,13 @@
 deactivate
 ```
 
-## command usage
+## boj tool usage
 
 ```bash
-# 
+# print boj help message
+boj
 ```
+Use boj command only in boj directory
 
 ## template usage
 
