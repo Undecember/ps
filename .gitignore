@@ -1,7 +1,9 @@
 bin/cf
+bin/boj
+boj_tool/build
 codeforces/**/test*.txt
-# Created by https://www.toptal.com/developers/gitignore/api/git,vim,c++
-# Edit at https://www.toptal.com/developers/gitignore?templates=git,vim,c++
+# Created by https://www.toptal.com/developers/gitignore/api/vim,c++,git,cmake
+# Edit at https://www.toptal.com/developers/gitignore?templates=vim,c++,git,cmake
 
 ### C++ ###
 # Prerequisites
@@ -36,6 +38,23 @@ codeforces/**/test*.txt
 *.exe
 *.out
 *.app
+
+### CMake ###
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+### CMake Patch ###
+# External projects
+*-prefix/
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:
@@ -73,4 +92,4 @@ tags
 # Persistent undo
 [._]*.un~
 
-# End of https://www.toptal.com/developers/gitignore/api/git,vim,c++
+# End of https://www.toptal.com/developers/gitignore/api/vim,c++,git,cmake

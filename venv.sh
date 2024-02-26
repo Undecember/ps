@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# check dependency
+for cmd in "cmake" "g++" "wget"; do
+    if ! command -v $cmd &> /dev/null; then
+        echo "[fatal] $cmd is not installed. Install it with apt and retry later."
+        exit 1
+    fi
+done
+
 cf_tool_url="https://github.com/dianhsu-official/cf-tool/releases/download/v1.0.9/cf_linux_x64.zip"
 
 download_cf_tool() {
@@ -23,6 +31,30 @@ if [ ! -f "./bin/cf" ]; then
     download_cf_tool
 fi
 alias cf="$(pwd)/bin/cf"
+
+build_boj_tool() {
+    echo "Building boj tool..."
+    cd boj_tool
+    rm -rf build
+    mkdir build
+    cd build
+    echo "Configuring CMake..."
+    cmake ..
+    echo "Make..."
+    make -j$(nproc)
+    mv boj ../../bin/boj
+    echo "Cleaning..."
+    cd ..
+    rm -rf build
+    cd ..
+    echo "Complete."
+}
+
+# setup boj tool
+if [ ! -f "./bin/boj" ]; then
+    build_boj_tool
+fi
+alias boj="$(pwd)/bin/boj"
 
 # setup PS
 PS1_OLD=$PS1
