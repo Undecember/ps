@@ -1,5 +1,11 @@
 # Problem solving environment
 
+## Before Use
+
+```bash
+./clean.sh # to clean the codes of mine (==Undecember)
+```
+
 ## venv usage
 
 ```bash
