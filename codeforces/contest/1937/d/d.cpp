@@ -1,6 +1,6 @@
 /*
- * Author : $%U%$
- * Created at $%Y%$-$%M%$-$%D%$ $%h%$:$%m%$:$%s%$
+ * Author : uuuuuuundec
+ * Created at 2024-02-29 23:38:00
  * powered by codeforce cli
  */
 
@@ -47,16 +47,93 @@ using lli = long long int;
 int fact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];m.push_back(MDC(fact(n-1)*n));return m[n];}int ifact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];ifact(n-1);m.push_back(INV(fact(n)));return m[n];}int ncr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(MDC(fact(n)*ifact(r))*ifact(n-r));}int npr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(fact(n)*ifact(n-r));}
 // == end of template == //
 
-int N, M;
-vector<int> A;
+int N;
+string S;
 
+// < > < < < >
+// 0 0 0 0 0 0
+// 1|
+//  |1
+//   4|3
+//     7|5
+//       A|7
+//        |8 1
+//
+// main:111	TEST = 3
+// N = 6
+// S = <><<<>
+//
+// ans = [1, 0, 0, 0, 0, 0, ]
+//
+// i = 1
+// S[i] = >
+// b = 1
+// res = 1 1 0 0 0 0
+//
+// i = 2
+// S[i] = <
+// b = 1
+// res = 1 4 0 0 0 0
+//
+// i = 3
+// S[i] = <
+// b = 2
+// res = 1 4 7 0 0 0
+//
+// i = 4
+// S[i] = <
+// b = 3
+// res = 1 4 7 10 0 0
+//
+// i = 5
+// S[i] = >
+// b = 4
+// res = 1 4 7 10 1 1
+
+
+// bar position : b   =  b - 1 | b
+// answers : a[i]
+// < appended at i
+//   : ans[i] = ans[i - 1] + 2
+//   : ans[b : i] = ans[b - 1] + 2 * (i - b) + 1
+//   : b = i
+// > appended at i
+//   : ans[b : i + 1] += 1
+ 
 int _solve() {
-    cin >> N >> M;
-    A.resize(N);
-    for (auto &ai : A) cin >> ai;
+    cin >> N >> S;
+    dbg(N);
+    dbg(S);
+    vector<int> ans(N, 0);
+    int b; {
+        for (b = 0; b < N; b++)
+            if (S[b] == '>') break;
+        for (int i = 0; i < b; i++)
+            ans[i] = i + 1;
+    }
+    dbg(ans);
+    SumSegTree<int> sst(ans);
+    for (int i = b; i < N; i++) {
+        dbg(S[i]);
+        dbg(b);
+        if (S[i] == '<') {
+            if (i) sst.add(i, i + 1, sst.query(i - 1, i) + 2 - sst.query(i, i + 1));
+            int newv = 2 * (i - b) + 1;
+            if (b) newv += sst.query(b - 1, b);
+            for (int j = b; j < i; j++) {
+                int orig = sst.query(j, j + 1);
+                sst.add(j, j + 1, newv - orig);
+            }
+            b = i;
+        } else sst.add(b, i + 1, 1);
+    }
+    dbg(b);
+    for (int i = 0; i < N; i++)
+        cout << sst.query(i, i + 1) << ' ';
+    cout << endl;
     return 0;
 }
-
+ 
 void _predo() {
 }
 
