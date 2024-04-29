@@ -1,6 +1,6 @@
 /*
- * Author : uuuuuuundec
- * Created at 2024-02-29 23:38:00
+ * Author : undec
+ * Created at 2024-04-13 23:46:35
  * powered by codeforce cli
  */
 
@@ -48,102 +48,33 @@ int fact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];m.push_b
 // == end of template == //
 
 int N;
-string S;
+vector<int> A;
 
-// < > < < < >
-// 0 0 0 0 0 0
-// 1|
-//  |1
-//   4|3
-//     7|5
-//       A|7
-//        |8 1
-//
-// main:111	TEST = 3
-// N = 6
-// S = <><<<>
-//
-// ans = [1, 0, 0, 0, 0, 0, ]
-//
-// i = 1
-// S[i] = >
-// b = 1
-// res = 1 1 0 0 0 0
-//
-// i = 2
-// S[i] = <
-// b = 1
-// res = 1 4 0 0 0 0
-//
-// i = 3
-// S[i] = <
-// b = 2
-// res = 1 4 7 0 0 0
-//
-// i = 4
-// S[i] = <
-// b = 3
-// res = 1 4 7 10 0 0
-//
-// i = 5
-// S[i] = >
-// b = 4
-// res = 1 4 7 10 1 1
-
-
-// bar position : b   =  b - 1 | b
-// answers : a[i]
-// < appended at i
-//   : b' = next '>' after b
-//   : ans[i] = ans[i - 1] + 2
-//   : ans[b : i] = ans[b - 1] + 2 * (i - b) + 1
-//   : b = i
-// > appended at i
-//   : ans[b : i + 1] += 1
-
-// > > <
-//|
-//|1
-//|2 1
-// 5|6 3
- 
 int _solve() {
-    cin >> N >> S;
-    dbg(N);
-    dbg(S);
-    vector<int> ans(N, 0);
-    int b; {
-        for (b = 0; b < N; b++)
-            if (S[b] == '>') break;
-        for (int i = 0; i < b; i++)
-            ans[i] = i + 1;
+    cin >> N;
+    A.resize(N);
+    for (auto &ai : A) cin >> ai;
+    sort(all(A));
+    set<int> pairs[2], soles[2];
+    for (int i = 0; i < N; i++) {
+        if (soles[0].find(A[i]) != soles[0].end()) {
+            soles[0].erase(A[i]);
+            pairs[0].insert(A[i]);
+        } else soles[0].insert(A[i]);
     }
-    dbg(ans);
-    SumSegTree<int> sst(ans);
-    for (int i = b; i < N; i++) {
-        dbg(S[i]);
-        dbg(b);
-        if (S[i] == '<') {
-            if (i) sst.add(i, sst.query(i - 1, i) + 2 - sst.query(i, i + 1));
-            int newv = 2 * (i - b) + 1;
-            if (b) newv += sst.query(b - 1, b);
-            for (int j = b; j < i; j++) {
-                int orig = sst.query(j, j + 1);
-                sst.add(j, newv - orig);
-            }
-            b = i;
-        } else sst.add(b, i + 1, 1);
-    for (int i = 0; i < N; i++)
-        cerr << sst.query(i, i + 1) << ' ';
-    cerr << endl;
-    }
-    dbg(b);
-    for (int i = 0; i < N; i++)
-        cout << sst.query(i, i + 1) << ' ';
-    cout << endl;
+    for (int i = 1; i <= N; i++)
+        if (soles[0].find(i) != soles[0].end())
+            soles[1].insert(i);
+        else if (pairs[0].find(i) == pairs[0].end())
+            pairs[1].insert(i);
+    dbg(pairs[0]);
+    dbg(pairs[1]);
+    dbg(soles[0]);
+    dbg(soles[1]);
+    cout << pairs[0].size() << endl;
     return 0;
 }
- 
+
 void _predo() {
 }
 

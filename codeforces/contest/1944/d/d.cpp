@@ -1,12 +1,11 @@
 /*
- * Author : uuuuuuundec
- * Created at 2024-02-29 23:38:00
+ * Author : undec
+ * Created at 2024-03-16 23:35:01
  * powered by codeforce cli
  */
 
 // == FLAGS == //
 #define _ISTC                   // remove this to solve non-multiple test problem
-#define _NO_NEED_64INT          // remove this to use 64bit int for "int"
 #define _CONSTANT_MD            // remove this to use non-static MD from input
 #define _USE_TYPICAL_MD         // remove this to use custom constant MD
 #define _CUSTOM_MD 1000000007   // edit this to use custom MD
@@ -47,103 +46,119 @@ using lli = long long int;
 int fact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];m.push_back(MDC(fact(n-1)*n));return m[n];}int ifact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];ifact(n-1);m.push_back(INV(fact(n)));return m[n];}int ncr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(MDC(fact(n)*ifact(r))*ifact(n-r));}int npr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(fact(n)*ifact(n-r));}
 // == end of template == //
 
-int N;
+// let a[i] = min(j) s.t. a[i] != a[j] and j > i
+// then for [l, r)
+// loop i on [l, r)
+// a[i] = j indicates that from [i, j) to [l, j + (i - l)) or [l + (r - j), r) -> k-good
+//      => k-good for k in [j - i, j - i + min(i - l, r - j))
+//                                         ^ this value goes 0, 1, 2, ... 2, 0
+// let k = i - l so k loops on [0, r - l)
+//      => k-good for k in [j - (k + l), j - (k + l) + min(k, r - j))
+//
+// abcdedcba
+//  bcdededcb
+// ababababab...
+// this case, ans = 2 + 4 + ... + ((R - L) - (R - L) % 2)
+// maximum length of this pattern from i = a[i]
+//
+// abcddcba
+//  bcddddcb
+// aaaaaaaaa
+// this case, ans = 0
+// maximum length of this pattern from i = b[i]
+//
+// otherwise, ans = 2 + 3 + 4 + ...
+
+int N, Q;
 string S;
+vector<int> odd_dp, even_dp;
 
-// < > < < < >
-// 0 0 0 0 0 0
-// 1|
-//  |1
-//   4|3
-//     7|5
-//       A|7
-//        |8 1
-//
-// main:111	TEST = 3
-// N = 6
-// S = <><<<>
-//
-// ans = [1, 0, 0, 0, 0, 0, ]
-//
-// i = 1
-// S[i] = >
-// b = 1
-// res = 1 1 0 0 0 0
-//
-// i = 2
-// S[i] = <
-// b = 1
-// res = 1 4 0 0 0 0
-//
-// i = 3
-// S[i] = <
-// b = 2
-// res = 1 4 7 0 0 0
-//
-// i = 4
-// S[i] = <
-// b = 3
-// res = 1 4 7 10 0 0
-//
-// i = 5
-// S[i] = >
-// b = 4
-// res = 1 4 7 10 1 1
+void manacher() {
+    odd_dp.assign(N, 0);
+    int l = 0, r = -1;
+    for (int i = 0; i < N; i++) {
+        int sz = i > r ? 1 : min(r - i + 1, odd_dp[l + r - i]);
+        while (i - sz >= 0 && i + sz < N && S[i - sz] == S[i + sz])
+            sz++;
+        odd_dp[i] = sz--;
+        if (i + sz > r) {
+            l = i - sz;
+            r = i + sz;
+        }
+    }
+    dbg(odd_dp);
+    l = 0, r = -1;
+    even_dp.assign(N, 0);
+    for (int i = 0; i < N; i++) {
+        int sz = i > r ? 0 : min(r - i + 1, even_dp[l + r - i - 1]);
+        while (i - sz - 1 >= 0 && i + sz < N && S[i - sz - 1] == S[i + sz])
+            sz++;
+        even_dp[i] = sz--;
+        if (i + sz > r) {
+            l = i - sz - 1;
+            r = i + sz;
+        }
+    }
+    dbg(even_dp);
+}
 
-
-// bar position : b   =  b - 1 | b
-// answers : a[i]
-// < appended at i
-//   : b' = next '>' after b
-//   : ans[i] = ans[i - 1] + 2
-//   : ans[b : i] = ans[b - 1] + 2 * (i - b) + 1
-//   : b = i
-// > appended at i
-//   : ans[b : i + 1] += 1
-
-// > > <
-//|
-//|1
-//|2 1
-// 5|6 3
- 
 int _solve() {
-    cin >> N >> S;
-    dbg(N);
+    cin >> N >> Q >> S;
     dbg(S);
-    vector<int> ans(N, 0);
-    int b; {
-        for (b = 0; b < N; b++)
-            if (S[b] == '>') break;
-        for (int i = 0; i < b; i++)
-            ans[i] = i + 1;
-    }
-    dbg(ans);
-    SumSegTree<int> sst(ans);
-    for (int i = b; i < N; i++) {
-        dbg(S[i]);
-        dbg(b);
-        if (S[i] == '<') {
-            if (i) sst.add(i, sst.query(i - 1, i) + 2 - sst.query(i, i + 1));
-            int newv = 2 * (i - b) + 1;
-            if (b) newv += sst.query(b - 1, b);
-            for (int j = b; j < i; j++) {
-                int orig = sst.query(j, j + 1);
-                sst.add(j, newv - orig);
+    manacher();
+    vector<int> a(N, 2), b(N, 1);
+    {
+        a[a.size() - 1] = 1;
+        int fr = 0;
+        for (int i = 2; i < N; i++) {
+            if (S[i] != S[fr + (i - fr) % 2]) {
+                for (int j = fr; j < i; j++)
+                    a[j] = i - j;
+                fr = i - 1;
             }
-            b = i;
-        } else sst.add(b, i + 1, 1);
-    for (int i = 0; i < N; i++)
-        cerr << sst.query(i, i + 1) << ' ';
-    cerr << endl;
+        }
+        dbg(a);
     }
-    dbg(b);
-    for (int i = 0; i < N; i++)
-        cout << sst.query(i, i + 1) << ' ';
-    cout << endl;
+    {
+        int fr = 0;
+        for (int i = 1; i <= N; i++) {
+            if (i == N || S[i] != S[fr]) {
+                for (int j = fr; j < i; j++)
+                    b[j] = i - j;
+                fr = i;
+            }
+        }
+        dbg(b);
+    }
+    while (Q--) {
+        int L, R;
+        cin >> L >> R;
+        L--;
+        dbg(L); dbg(R);
+        if (R - L == 1) {
+            cout << 0 << endl;
+            continue;
+        }
+        if (b[L] >= R - L) cout << 0 << endl;
+        else if (a[L] >= R - L) {
+            int ee = R - L - (R - L) % 2;
+            cout << (ee + 2) * ee / 4 << endl;
+        }
+        else {
+            int ee = R - L;
+            int ans = (ee + 2) * (ee - 2 + 1) / 2;
+            dbg(ans);
+            if (ee % 2) {
+                if (odd_dp[(L + R) / 2] == ee / 2 + 1) ans -= ee;
+            } else {
+                if (even_dp[(L + R) / 2] == ee / 2) ans -= ee;
+            }
+            cout << ans << endl;
+        }
+    }
     return 0;
 }
- 
+
 void _predo() {
 }
 

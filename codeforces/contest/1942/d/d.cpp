@@ -1,6 +1,6 @@
 /*
- * Author : uuuuuuundec
- * Created at 2024-02-29 23:38:00
+ * Author : undec
+ * Created at 2024-03-30 23:35:02
  * powered by codeforce cli
  */
 
@@ -47,103 +47,53 @@ using lli = long long int;
 int fact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];m.push_back(MDC(fact(n-1)*n));return m[n];}int ifact(int n){static vector<int>m(1,1);if((int)m.size()>n)return m[n];ifact(n-1);m.push_back(INV(fact(n)));return m[n];}int ncr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(MDC(fact(n)*ifact(r))*ifact(n-r));}int npr(int n,int r){if(n<0||r<0)return 0;if(r>n)return 0;return MDC(fact(n)*ifact(n-r));}
 // == end of template == //
 
-int N;
-string S;
+int N, K;
+int A[1005][1005];
 
-// < > < < < >
-// 0 0 0 0 0 0
-// 1|
-//  |1
-//   4|3
-//     7|5
-//       A|7
-//        |8 1
-//
-// main:111	TEST = 3
-// N = 6
-// S = <><<<>
-//
-// ans = [1, 0, 0, 0, 0, 0, ]
-//
-// i = 1
-// S[i] = >
-// b = 1
-// res = 1 1 0 0 0 0
-//
-// i = 2
-// S[i] = <
-// b = 1
-// res = 1 4 0 0 0 0
-//
-// i = 3
-// S[i] = <
-// b = 2
-// res = 1 4 7 0 0 0
-//
-// i = 4
-// S[i] = <
-// b = 3
-// res = 1 4 7 10 0 0
-//
-// i = 5
-// S[i] = >
-// b = 4
-// res = 1 4 7 10 1 1
+struct Ptr {
+    int i, j;
+    multiset<int, greater<int>>::iterator ktr;
+    bool operator()(const Ptr &l, const Ptr &r) {
+        return *l.ktr + A[l.j][l.i] < *r.ktr + A[r.j][r.i];
+    }
+};
 
-
-// bar position : b   =  b - 1 | b
-// answers : a[i]
-// < appended at i
-//   : b' = next '>' after b
-//   : ans[i] = ans[i - 1] + 2
-//   : ans[b : i] = ans[b - 1] + 2 * (i - b) + 1
-//   : b = i
-// > appended at i
-//   : ans[b : i + 1] += 1
-
-// > > <
-//|
-//|1
-//|2 1
-// 5|6 3
- 
 int _solve() {
-    cin >> N >> S;
-    dbg(N);
-    dbg(S);
-    vector<int> ans(N, 0);
-    int b; {
-        for (b = 0; b < N; b++)
-            if (S[b] == '>') break;
-        for (int i = 0; i < b; i++)
-            ans[i] = i + 1;
-    }
-    dbg(ans);
-    SumSegTree<int> sst(ans);
-    for (int i = b; i < N; i++) {
-        dbg(S[i]);
-        dbg(b);
-        if (S[i] == '<') {
-            if (i) sst.add(i, sst.query(i - 1, i) + 2 - sst.query(i, i + 1));
-            int newv = 2 * (i - b) + 1;
-            if (b) newv += sst.query(b - 1, b);
-            for (int j = b; j < i; j++) {
-                int orig = sst.query(j, j + 1);
-                sst.add(j, newv - orig);
-            }
-            b = i;
-        } else sst.add(b, i + 1, 1);
+    cin >> N >> K;
+    memset(A, 0, 1005 * 1005 * sizeof(int));
     for (int i = 0; i < N; i++)
-        cerr << sst.query(i, i + 1) << ' ';
-    cerr << endl;
+        for (int j = i + 1; j <= N; j++)
+            cin >> A[i][j];
+    // dpm[i] = largest k values only painting cells in [0, i)
+    // dpm[0] = { 0 }
+    // dpm[1] = { 0, A[0][1] }
+    // dpm[i] = pick largest k values among all possible dpm[j - 1][k] + A[j <= i][i]
+    vector<multiset<int, greater<int>>> dpm(N + 1);
+    dpm[0].insert(0);
+    dpm[1].insert(0), dpm[1].insert(A[0][1]);
+    dbg(dpm[0]); dbg(dpm[1]);
+    for (int i = 2; i <= N; i++) {
+        dbg(i);
+        priority_queue<Ptr, vector<Ptr>, Ptr> pq;
+        for (int j = 0; j <= i; j++)
+            pq.push({i, j, dpm[max(0, j - 1)].begin()});
+        while (!pq.empty() && (int)dpm[i].size() < K) {
+            auto cur = pq.top(); pq.pop();
+            if (cur.ktr == dpm[max(0, cur.j - 1)].end()) continue;
+            dbg(cur.i); dbg(cur.j); dbg(dpm[max(0, cur.j - 1)]); dbg(*cur.ktr);
+            dpm[i].insert(*cur.ktr + A[cur.j][cur.i]);
+            cur.ktr++;
+            pq.push(cur);
+        }
+        dbg(dpm[i]);
     }
-    dbg(b);
-    for (int i = 0; i < N; i++)
-        cout << sst.query(i, i + 1) << ' ';
+    while ((int)dpm[N].size() > K) dpm[N].erase(prev(dpm[N].end()));
+    for (auto &ans : dpm[N])
+        cout << ans << ' ';
     cout << endl;
     return 0;
 }
- 
+
 void _predo() {
 }
 
